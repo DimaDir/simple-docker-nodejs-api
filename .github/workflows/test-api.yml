@@ -5,6 +5,7 @@ on: [push, workflow_dispatch]
 jobs:
     test-api:
         runs-on: ubuntu-latest
+        container: ubuntu:20.04
         services:
             app:
                 image: alialaa17/simple-node-api:latest
@@ -19,6 +20,10 @@ jobs:
                     - 27017:27017
         steps:
             # Steps run directly in the runner runtime. They reach into the services (Services are scoped within the steps of same job.). If here was a container (directly under runs-on) the steps would've executed inside that container.
+            - name: Install curl for ubuntu 20.04 container
+              run: |
+                apt update
+                apt install curl -y
             - name: Dump Services Context
               run: echo '${{ toJson(job.services) }}'
             - name: Post a user
