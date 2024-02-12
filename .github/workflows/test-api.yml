@@ -1,0 +1,27 @@
+name: Test API
+
+on: [push, workflow_dispatch]
+
+jobs:
+    test-api:
+        runs-on: ubuntu-latest
+        services:
+            app:
+                image: alialaa17/simple-node-api:latest
+                    # cannot use a docker build command here. Image needed to be published to to registry already.
+                ports:
+                    - 3001:3000
+                env:
+                    MONGO_HOSTNAME: mongo
+            mongo:
+                image: mongo
+                ports:
+                    - 27017:27017
+        steps:
+            # Steps run directly in the runner runtime. They reach into the services (Services are scoped within the steps of same job.). If here was a container (directly under runs-on) the steps would've executed inside that container.
+            - name: Dump Services Context
+              run: echo '${{ toJson(job.services) }}'
+            - name: Post a user
+              run: 'curl -X POST http://localhost:3001/api/users -H ''Content-Type: application/json'' -d ''{"username": "user-one", "address": "passwd"}'''
+            - name: Get Users
+              run: curl http://localhost:3001/api/users
