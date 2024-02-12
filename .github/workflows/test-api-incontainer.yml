@@ -1,4 +1,4 @@
-name: Test API
+name: Test API in Container
 
 on: [push, workflow_dispatch]
 
@@ -10,14 +10,14 @@ jobs:
             app:
                 image: alialaa17/simple-node-api:latest
                     # cannot use a docker build command here. Image needed to be published to to registry already.
-                ports:
-                    - 3001:3000
+                # ports:
+                #     - 3001:3000
                 env:
                     MONGO_HOSTNAME: mongo
             mongo:
                 image: mongo
-                ports:
-                    - 27017:27017
+                # ports:
+                #     - 27017:27017
         steps:
             # Steps run directly in the runner runtime. They reach into the services (Services are scoped within the steps of same job.). If here was a container (directly under runs-on) the steps would've executed inside that container.
             - name: Install curl for ubuntu 20.04 container
@@ -27,6 +27,10 @@ jobs:
             - name: Dump Services Context
               run: echo '${{ toJson(job.services) }}'
             - name: Post a user
-              run: 'curl -X POST http://localhost:3001/api/users -H ''Content-Type: application/json'' -d ''{"username": "user-one", "address": "passwd"}'''
+              run: 'curl -X POST http://app:3000/api/users -H ''Content-Type: application/json'' -d ''{"username": "user-one", "address": "passwd"}'''
             - name: Get Users
-              run: curl http://localhost:3001/api/users
+              run: curl http://app:3000/api/users
+
+# docker will expose all ports between all services in the same docker network.
+## Instead of the host 'localhost', the container name is used 'app' or 'mongo' (like in the SF deployment)
+## The ports though, since they are not mapped anymore, have to be the direct application ports 'inside' the container.
